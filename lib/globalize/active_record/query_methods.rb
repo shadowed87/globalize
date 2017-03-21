@@ -45,8 +45,15 @@ module Globalize
         if opts.is_a?(Hash) && respond_to?(:translated_attribute_names) && (keys = opts.symbolize_keys.keys & translated_attribute_names).present?
           opts = opts.dup
           keys.each { |key| opts[translated_column_name(key)] = opts.delete(key) || opts.delete(key.to_s) }
-          opts
+        elsif opts.is_a?(String) && respond_to?(:translated_attribute_names)
+          opts.gsub(/(?<=\b)(\w*.)(?=\ ilike )/i){ |key| 
+            if translated_attribute_names.include? key.to_sym
+                key = translated_column_name(key) 
+            end
+            key
+          }
         end
+        opts
       end
 
       if ::ActiveRecord::VERSION::STRING < "5.0.0"
